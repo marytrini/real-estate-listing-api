@@ -1,0 +1,47 @@
+services:
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 4005:8080
+  db:
+    image: mysql
+    restart: always
+    environment:
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=password
+    ports:
+      - "${DB_PORT}:3306"
+    volumes:
+      - db:/var/lib/mysql
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    environment:
+      - PMA_HOST=db
+      - PMA_USER=${DB_USERNAME}
+      - PMA_PASSWORD=${DB_PASSWORD}
+    ports:
+      - 8081:80
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 8000:8000
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_KEY=${APP_KEY}
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - db
+volumes:
+  db:
+    driver: local
+  sail-data:
+    driver: local
